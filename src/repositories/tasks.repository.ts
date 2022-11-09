@@ -1,49 +1,73 @@
-import { responsibles, tasks } from "../db/data.js";
+import db from "../db/db.js";
 import { Responsible } from "../protocols/Responsible.js";
 import { Task } from "../protocols/Task.js";
 
-function getTaskById(taskId: number): boolean {
-    const task: Task | undefined = tasks.find(task => task.id === taskId);
-    return task === undefined ? false : true;
+async function DoesTaskExist(taskId: number): Promise<boolean> {
+    const task: Task[] = (await db.query('SELECT * FROM tasks WHERE id = $1;', [taskId])).rows;
+
+    return !task.length ? false : true;
 }
 
-function getAllTasks(): Task[] {
+async function getAllTasks(): Promise<Task[]> {
+    const tasks: Task[] = (await db.query(
+        "SELECT * FROM tasks;"
+    )).rows;
     return tasks
 }
 
-function getResponsibleTasks(responsibleId: number): Task[] | null {
-    const responsibleValidation: Responsible | undefined = responsibles.find(responsible => responsible.id === responsibleId);
-    if (responsibleValidation === undefined) return null
+async function checkResponsibleId(responsibleId: number): Promise<Responsible[]> {
+    const tasks = (await db.query('SELECT * FROM responsibles WHERE id = $1;', [responsibleId])).rows;
 
-    return tasks.filter(task => task.responsibleId === responsibleId);
+    return tasks
 }
 
-function insertOneTask(taskData: Task): Task {
-    taskData.id = tasks[tasks.length-1].id + 1;
-    tasks.push(taskData);
-    return taskData;
+async function getResponsibleTasks(responsibleId: number): Promise<Task[]> {
+    const tasks = (await db.query('SELECT * FROM tasks WHERE responsible_id = $1;', [responsibleId])).rows;
+
+    return tasks
 }
 
-function updateTaskStatus(taskId: number, responsibleId: number): boolean {
-    const task: Task = tasks.find(task => task.id === taskId);
-    if (task.responsibleId !== responsibleId) return false;
+async function insertOneTask(taskData: Task): Promise<number> {
+    await db.query(`
+        INSERT INTO tasks
+        (name, description, deadline, responsible_id, responsible)
+        VALUES ($1, $2, $3, $4, $5);
+    `, [taskData.name, taskData.description, taskData.deadline, taskData.responsibleId, taskData.responsible]);
+    
+    const taskId = (await db.query('SELECT MAX(id) FROM tasks;')).rows[0].max;
 
-    task.done = !task.done;
+    return taskId;
+}
+
+async function updateTaskStatus(taskId: number, responsibleId: number): Promise<boolean> {
+    const task: Task[] = (await db.query(`
+        SELECT * FROM tasks WHERE id = $1 AND responsible_id = $2;
+    `, [taskId, responsibleId])).rows;
+    if (!task.length) return false;
+
+    await db.query(`
+        UPDATE tasks SET done = $1 WHERE id = $2;
+    `, [!task[0].done, task[0].id]);
 
     return true
 }
 
-function deleteTaskById(taskId: number, responsibleId: number) {
-    const task: Task = tasks.find(task => task.id === taskId);
-    if (task.responsibleId !== responsibleId) return false;
+async function deleteTaskById(taskId: number, responsibleId: number): Promise<boolean> {
+    const task: Task[] = (await db.query(`
+        SELECT * FROM tasks WHERE id = $1 AND responsible_id = $2;
+    `, [taskId, responsibleId])).rows;
+    if (!task.length) return false;
 
-    tasks.splice(taskId-1, 1);
+    await db.query(`
+        DELETE FROM tasks WHERE id = $1;
+    `, [task[0].id]);
 
     return true
 }
 
 export {
-    getTaskById,
+    DoesTaskExist,
+    checkResponsibleId,
     getAllTasks,
     insertOneTask,
     getResponsibleTasks,
