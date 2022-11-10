@@ -1,30 +1,25 @@
 import db from "../db/db.js";
-import { Responsible } from "../protocols/Responsible.js";
+import { QueryResult } from 'pg';
+import { ResponsibleEntity } from "../protocols/Responsible.js";
 import { Task } from "../protocols/Task.js";
 
-async function DoesTaskExist(taskId: number): Promise<boolean> {
-    const task: Task[] = (await db.query('SELECT * FROM tasks WHERE id = $1;', [taskId])).rows;
-
-    return !task.length ? false : true;
+async function DoesTaskExist(taskId: number): Promise<QueryResult<Task[]>> {
+    return db.query('SELECT * FROM tasks WHERE id = $1;', [taskId]);
 }
 
-async function getAllTasks(): Promise<Task[]> {
-    const tasks: Task[] = (await db.query(
+function getAllTasks(): Promise<QueryResult<Task[]>> {
+    const tasks: Promise<QueryResult<Task[]>> = db.query(
         "SELECT * FROM tasks;"
-    )).rows;
+    );
     return tasks
 }
 
-async function checkResponsibleId(responsibleId: number): Promise<Responsible[]> {
-    const tasks = (await db.query('SELECT * FROM responsibles WHERE id = $1;', [responsibleId])).rows;
-
-    return tasks
+function checkResponsibleId(responsibleId: number): Promise<QueryResult<ResponsibleEntity[]>> {
+    return db.query('SELECT * FROM responsibles WHERE id = $1;', [responsibleId]);
 }
 
-async function getResponsibleTasks(responsibleId: number): Promise<Task[]> {
-    const tasks = (await db.query('SELECT * FROM tasks WHERE responsible_id = $1;', [responsibleId])).rows;
-
-    return tasks
+function getResponsibleTasks(responsibleId: number): Promise<QueryResult<Task[]>> {
+    return db.query('SELECT * FROM tasks WHERE responsible_id = $1;', [responsibleId]);
 }
 
 async function insertOneTask(taskData: Task): Promise<number> {

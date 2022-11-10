@@ -8,4 +8,8 @@ type Task = {
     done: boolean,
 };
 
-export { Task };
+type MaxId = {
+    max: number,
+}
+
+export { Task, MaxId };

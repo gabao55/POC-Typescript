@@ -1,7 +1,9 @@
-type Responsible = {
-    id?: number,
+type ResponsibleEntity = {
+    id: number,
     name: string,
     token: string
 }
 
-export { Responsible };
+type Responsible = Omit<ResponsibleEntity, "id">;
+
+export { ResponsibleEntity, Responsible };
