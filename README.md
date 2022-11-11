@@ -2,6 +2,10 @@
 
 This is just a POC for Typescript first trial, so it is not deployed. This API is supposed to simulate a to do app server, that allows different end users to insert tasks, check or uncheck them as done, delete them and check either all tasks or someone's tasks.
 
+## Technologies
+
+This project was developed using Node.js along with express and Typescript and PostgreSQL for database
+
 ## Requisites
 
 This app requires Node.js and PostgreSQL to work properly (besides the packages and libs installed and listed in the package.json file)
