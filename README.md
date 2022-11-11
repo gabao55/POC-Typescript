@@ -32,3 +32,126 @@ In order to run it locally, run:
 ```bash
 npm run dev
 ```
+
+# Routes
+
+## List all tasks
+
+### Request
+
+`GET /tasks/`
+
+### Response
+
+    HTTP/1.1 200 OK
+    Status: 200 OK
+
+    data: [
+        {
+            "id": 1,
+            "name": "wash dishes",
+            "description": "wash all dishes",
+            "deadline": "20/11/2022",
+            "responsible_id": 1,
+            "responsible": "Gabriel",
+            "done": false
+        },
+        {
+            "id": 2,
+            "name": "Play cards",
+            "description": "play cards with friends",
+            "deadline": "tomorrow",
+            "responsible_id": 3,
+            "responsible": "Lucas",
+            "done": false
+        }
+    ]
+
+## List all responsible's tasks
+
+### Request
+
+`GET /tasks/:responsibleId`
+
+### Response
+
+    HTTP/1.1 200 OK
+    Status: 200 OK
+
+    data: [
+        {
+            "id": 1,
+            "name": "wash dishes",
+            "description": "wash all dishes",
+            "deadline": "20/11/2022",
+            "responsible_id": 1,
+            "responsible": "Gabriel",
+            "done": false
+        },
+        {
+            "id": 2,
+            "name": "Play cards",
+            "description": "play cards with friends",
+            "deadline": "tomorrow",
+            "responsible_id": 1,
+            "responsible": "Gabriel",
+            "done": false
+        }
+    ]
+
+## Insert a task with the corresponding responsible 
+
+### Request
+
+`POST /tasks/`
+
+    Body: 
+        {
+            "name": "Play cards",
+            "description": "play cards with friends",
+            "deadline": "2022/11/20"
+        }
+    Header (the Authentication header will be the username+123, can be gabriel, lucas or pedro): 
+        {
+            "Authentication": "Bearer gabriel123"
+        }
+
+### Response
+
+    HTTP/1.1 201 CREATED
+    Status: 201 CREATED
+
+    data: "Task inserted with id 4"
+
+## Check and uncheck a task that belongs to a user as done/not done
+
+### Request
+
+`PATCH /tasks/:taskId`
+
+    Header (the Authentication header will be the username+123, can be gabriel, lucas or pedro): 
+        {
+            "Authentication": "Bearer gabriel123"
+        }
+
+### Response
+
+    HTTP/1.1 202 ACCEPTED
+    Status: 202 ACCEPTED
+
+
+## Delete a task that belongs to a user
+
+### Request
+
+`DELETE /tasks/:taskId`
+
+    Header (the Authentication header will be the username+123, can be gabriel, lucas or pedro): 
+        {
+            "Authentication": "Bearer gabriel123"
+        }
+
+### Response
+
+    HTTP/1.1 204 NO CONTENT
+    Status: 204 NO CONTENT
